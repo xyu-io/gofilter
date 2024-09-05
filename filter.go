@@ -10,7 +10,6 @@ import (
 const (
 	AND = 0
 	OR  = 1
-	//NOT
 )
 
 type FilterRule struct {
@@ -33,7 +32,7 @@ type RulePool struct {
 	CName   string // 函数标识
 	CParams []any  // 参数
 	CType   string // 字段名称
-	CSymbol string // 逻辑运算符号（包含、大于、小于、不等于、等于等）
+	CSymbol int    // 逻辑运算符号（包含、大于、小于、不等于、等于等）
 }
 
 type Filter func(option any, data any) bool // 根据过滤
@@ -129,8 +128,61 @@ func GetFnMaps(item any, fs map[string]RulePool) map[string]interface{} {
 		if value == nil {
 			continue
 		}
-		mps[name] = AnyFind(fn.CParams, value)
+		mps[name] = logicSelection(fn, value)
 	}
 
 	return mps
+}
+
+// 逻辑运算
+func logicSelection(rp RulePool, value any) bool {
+	var flag = true
+	switch rp.CSymbol {
+	case IN:
+		flag = AnyFind(rp.CParams, value)
+	case NIN:
+		flag = !AnyFind(rp.CParams, value)
+	case EQ: // 等于
+		equal, err := AnyEqual(rp.CParams, value)
+		if err != nil {
+			return true // 不兼容类型不做处理
+		}
+		flag = equal
+	case NE: // 不等于
+		equal, err := AnyEqual(rp.CParams, value)
+		if err != nil {
+			return true // 不兼容类型不做处理
+		}
+		flag = !equal
+	case GT: // 大于
+		gt, err := AnyGreaterThan(rp.CParams, value)
+		if err != nil {
+			return true // 不兼容类型不做处理
+		}
+		flag = gt
+	case LT: // 小于
+		lt, err := AnyLessThan(rp.CParams, value)
+		if err != nil {
+			return true // 不兼容类型不做处理
+		}
+		flag = lt
+	case LE: // 小于等于 等价于 不大于
+		gt, err := AnyGreaterThan(rp.CParams, value)
+		if err != nil {
+			return true // 不兼容类型不做处理
+		}
+		flag = !gt
+	case GE: // 大于等于 等价于 不小于
+		lt, err := AnyLessThan(rp.CParams, value)
+		if err != nil {
+			return true // 不兼容类型不做处理
+		}
+		flag = lt
+	default:
+		// 不支持的类型
+		flag = false
+		panic("unhandled default case")
+	}
+
+	return flag
 }

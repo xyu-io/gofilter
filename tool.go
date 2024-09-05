@@ -1,6 +1,9 @@
 package gofilter
 
-import "reflect"
+import (
+	"errors"
+	"reflect"
+)
 
 func AnyFind[T comparable](arr []T, item T) bool {
 	for _, v := range arr {
@@ -13,6 +16,78 @@ func AnyFind[T comparable](arr []T, item T) bool {
 	}
 
 	return false
+}
+
+func AnyEqual[T comparable](arr []T, item T) (bool, error) {
+	if len(arr) != 1 {
+		return true, errors.New("params length must be 1")
+	}
+
+	element := arr[0]
+	if element == item {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func AnyLessThan[T comparable](arr []T, item T) (bool, error) {
+	if len(arr) != 1 {
+		return true, errors.New("params length must be 1")
+	}
+	element := arr[0]
+	elementValue := reflect.ValueOf(element)
+	itemValue := reflect.ValueOf(item)
+
+	switch elementValue.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		if itemValue.Int() < elementValue.Int() {
+			return true, nil
+		}
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		if uint64(itemValue.Uint()) < elementValue.Uint() {
+			return true, nil
+		}
+	case reflect.Float32, reflect.Float64:
+		if float64(itemValue.Float()) < elementValue.Float() {
+			return true, nil
+		}
+	case reflect.Bool:
+		return reflect.ValueOf(item).Bool(), nil
+	default: // string/map/slice ...
+		return false, nil
+	}
+
+	return false, nil
+}
+
+func AnyGreaterThan[T comparable](arr []T, item T) (bool, error) {
+	if len(arr) != 1 {
+		return true, errors.New("params length must be 1")
+	}
+	element := arr[0]
+	elementValue := reflect.ValueOf(element)
+	itemValue := reflect.ValueOf(item)
+	switch elementValue.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		if itemValue.Int() > elementValue.Int() {
+			return true, nil
+		}
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		if uint64(itemValue.Uint()) > elementValue.Uint() {
+			return true, nil
+		}
+	case reflect.Float32, reflect.Float64:
+		if float64(itemValue.Float()) > elementValue.Float() {
+			return true, nil
+		}
+	case reflect.Bool:
+		return reflect.ValueOf(item).Bool(), nil
+	default: // string/map/slice ...
+		return false, nil
+	}
+
+	return false, nil
 }
 
 func dealStructPtr(i any, ctype string) (string, any, bool) {

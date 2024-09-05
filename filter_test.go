@@ -296,9 +296,9 @@ func TestSelfDataRule(t *testing.T) {
 		RRules: []RulePool{
 			{
 				CName:   "F2",
-				CParams: []any{"c"},
-				CType:   "Origin",
-				CSymbol: "in",
+				CParams: []any{1},
+				CType:   "ID",
+				CSymbol: GT,
 			},
 		},
 	}
