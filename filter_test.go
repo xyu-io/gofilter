@@ -59,13 +59,12 @@ func TestSampleRule(t *testing.T) {
 		},
 	}
 
-	rl, err := GenRule("test-rule", "sender_01", rule)
+	rl, err := GenRule("test_rule", rule)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	var res = make([]Data, 0)
 	data := GenData(20)
 
 	for _, item := range data {
@@ -75,13 +74,8 @@ func TestSampleRule(t *testing.T) {
 			continue
 		}
 		if flag {
-			res = append(res, item)
+			t.Logf("-->tag 【%s】 msg: {%s, %d, %s}", rl.Tag(), item.DType, item.DLevel, item.DMsg)
 		}
-	}
-
-	send := rl.Sender()
-	for _, item := range res {
-		t.Logf("-->sender 【%s】 msg: {%s, %d, %s}", send, item.DType, item.DLevel, item.DMsg)
 	}
 
 }
@@ -104,13 +98,12 @@ func TestSampleRuleOfPtr(t *testing.T) {
 		},
 	}
 
-	rl, err := GenRule("test-rule", "sender_ptr", rule)
+	rl, err := GenRule("test_rule_ptr", rule)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	var res = make([]Data, 0)
 	data := []*Data{
 		&Data{
 			DTime:  time.Now().UnixNano(),
@@ -139,13 +132,8 @@ func TestSampleRuleOfPtr(t *testing.T) {
 			continue
 		}
 		if flag {
-			res = append(res, *item)
+			t.Logf("-->tag 【%s】 msg: {%s, %d, %s}", rl.Tag(), item.DType, item.DLevel, item.DMsg)
 		}
-	}
-
-	send := rl.Sender()
-	for _, item := range res {
-		t.Logf("-->sender 【%s】 msg: {%s, %d, %s}", send, item.DType, item.DLevel, item.DMsg)
 	}
 
 }
@@ -213,11 +201,10 @@ func TestComplexRule(t *testing.T) {
 		},
 	}
 
-	type Senders []string
 	rls := []Rule{rule1, rule2, rule3}
 	rIns := make([]*FilterRule, 0)
 	for index, r := range rls {
-		rl, err := GenRule("test-rule", fmt.Sprintf("sender_%d", index), r)
+		rl, err := GenRule(fmt.Sprintf("test_rule_%d", index), r)
 		if err != nil {
 			t.Error(err)
 			continue
@@ -228,14 +215,14 @@ func TestComplexRule(t *testing.T) {
 	data := GenData(50)
 
 	for _, item := range data {
-		for _, ins := range rIns {
-			flag, err := ins.Exec(item)
+		for _, rl := range rIns {
+			flag, err := rl.Exec(item)
 			if err != nil {
 				t.Error(err)
 				continue
 			}
 			if flag {
-				t.Logf("-->sender %+v, msg: {%s, %d, %s}", ins.Sender(), item.DType, item.DLevel, item.DMsg)
+				t.Logf("-->tag 【%s】 msg: {%s, %d, %s}", rl.Tag(), item.DType, item.DLevel, item.DMsg)
 			}
 		}
 
@@ -250,16 +237,12 @@ func TestEmptyRule(t *testing.T) {
 		RRules: []RulePool{},
 	}
 
-	type Senders []string
-	rl, err := GenRule("test-rule", "sender_empty_rule", ruleEmpty)
+	rl, err := GenRule("test_rule_empty", ruleEmpty)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	var res = make(map[string]struct {
-		Data
-		Senders
-	})
+
 	data := GenData(5)
 
 	for _, item := range data {
@@ -269,13 +252,8 @@ func TestEmptyRule(t *testing.T) {
 			continue
 		}
 		if flag {
-			t.Logf("-->sender %+v, msg: {%s, %d, %s}", rl.Sender(), item.DType, item.DLevel, item.DMsg)
+			t.Logf("-->tag 【%s】 msg: {%s, %d, %s}", rl.Tag(), item.DType, item.DLevel, item.DMsg)
 		}
-
-	}
-
-	for _, item := range res {
-		t.Logf("-->sender %+v, msg: {%s, %d, %s}", item.Senders, item.DType, item.DLevel, item.DMsg)
 	}
 
 }
@@ -325,7 +303,7 @@ func TestSelfDataRule(t *testing.T) {
 		},
 	}
 
-	rl, err := GenRule("test-rule", "sender_empty_rule", ruleEmpty)
+	rl, err := GenRule("test_rule_self", ruleEmpty)
 	if err != nil {
 		t.Error(err)
 		return

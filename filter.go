@@ -14,8 +14,7 @@ const (
 )
 
 type FilterRule struct {
-	rName   string              `json:"rname,omitempty"`
-	rSender string              `json:"sender,omitempty"`
+	rTag    string              `json:"rtag,omitempty"`
 	rExpr   string              `json:"expression,omitempty"`
 	rFnMaps map[string]RulePool `json:"fnmaps,omitempty"`
 	Rule    Rule                `json:"rules,omitempty"`
@@ -39,14 +38,13 @@ type RulePool struct {
 
 type Filter func(option any, data any) bool // 根据过滤
 
-func GenRule(name, sender string, rule Rule) (*FilterRule, error) {
+func GenRule(tag string, rule Rule) (*FilterRule, error) {
 	var r = &FilterRule{
-		rName:   name,
-		rSender: sender,
+		rTag:    tag,
 		rFnMaps: make(map[string]RulePool),
 		rExpr:   "", // fn1 AND  (fn2.1 OR fn2.0) AND  (fn3 AND fn2)
 		Rule:    rule,
-		execIns: NewGValuate(name),
+		execIns: NewGValuate(tag),
 	}
 
 	stack := NewStack()
@@ -59,19 +57,15 @@ func GenRule(name, sender string, rule Rule) (*FilterRule, error) {
 
 	err := r.execIns.Eval(r.expr())
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("%s 【%s】: %s", r.rSender, r.rExpr, err.Error()))
+		return nil, errors.New(fmt.Sprintf("%s 【%s】: %s", r.rTag, r.rExpr, err.Error()))
 	}
 
-	log.Printf("init succeed sender: %s, rule express: %s", sender, r.rExpr)
+	log.Printf("init succeed. tag: %s, rule express: %s", r.rTag, r.rExpr)
 	return r, nil
 }
 
 func (f *FilterRule) expr() string {
 	return f.rExpr
-}
-
-func (f *FilterRule) Name() string {
-	return f.rName
 }
 
 func (f *FilterRule) Exec(data any) (bool, error) {
@@ -83,8 +77,8 @@ func (f *FilterRule) Exec(data any) (bool, error) {
 	return flag, nil
 }
 
-func (f *FilterRule) Sender() string {
-	return f.rSender
+func (f *FilterRule) Tag() string {
+	return f.rTag
 }
 
 func (f *FilterRule) getFns() map[string]RulePool {
@@ -106,22 +100,6 @@ func (f *FilterRule) genExp(s *Stack, rs Rule) {
 	}
 
 }
-
-// 生成expression表达式
-//func genExp(s *Stack, rs []Rule) {
-//	for _, rl := range rs {
-//		// 多叶子
-//		if len(rl.RChild) > 0 { // 有子节点，先处理子节点
-//			genExp(s, rl.RChild)
-//		}
-//
-//		// 入栈操作符，操作数
-//		for _, r := range rl.RRules {
-//			s.Push(r.CName)
-//		}
-//		s.Push(rl.RType)
-//	}
-//}
 
 // GetDataField 通过反射获取结构体字段名称, data类型必须是struct
 func GetDataField(data any, ctype string) (string, any) {
