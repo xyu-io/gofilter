@@ -1,4 +1,4 @@
-module gofilter
+module github.com/xyu-io/gofilter
 
 go 1.23.0
 
