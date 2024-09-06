@@ -2,9 +2,41 @@ package gofilter
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
 	"time"
 )
+
+type data struct {
+	DTime  int64
+	DLevel int
+	DType  string
+	DMsg   any
+}
+
+// GenData 生成模拟数据
+func genData(col int) []data {
+	var dat = make([]data, 0)
+	for i := 0; i < col; i++ {
+		time.Sleep(time.Millisecond)
+		dat = append(dat, data{
+			DTime: time.Now().Unix(),
+			DLevel: func() int {
+				arr := []int{0, 1, 2, 3}
+				randomIndex := rand.Intn(len(arr))
+				return arr[randomIndex]
+			}(),
+			DType: func() string {
+				arr := []string{"info", "normal", "important", "danger"}
+				randomIndex := rand.Intn(len(arr))
+				return arr[randomIndex]
+			}(),
+			DMsg: "dataTime-" + fmt.Sprintf("%d", time.Now().UnixNano()),
+		})
+	}
+
+	return dat
+}
 
 func TestValuate(t *testing.T) {
 	gvIns := NewGValuate("test")
@@ -65,9 +97,9 @@ func TestSampleRule(t *testing.T) {
 		return
 	}
 
-	data := GenData(20)
+	dat := genData(50)
 
-	for _, item := range data {
+	for _, item := range dat {
 		flag, err := rl.Exec(item) //rl.ExecIns.Exec(GetFnMaps(*item, rl.getFns()))
 		if err != nil {
 			t.Error(err)
@@ -104,8 +136,8 @@ func TestSampleRuleOfPtr(t *testing.T) {
 		return
 	}
 
-	data := []*Data{
-		&Data{
+	dat := []*data{
+		&data{
 			DTime:  time.Now().UnixNano(),
 			DLevel: 1,
 			DType:  "important",
@@ -125,7 +157,7 @@ func TestSampleRuleOfPtr(t *testing.T) {
 		},
 	}
 
-	for _, item := range data {
+	for _, item := range dat {
 		flag, err := rl.Exec(item) //rl.ExecIns.Exec(GetFnMaps(*item, rl.getFns()))
 		if err != nil {
 			t.Error(err)
@@ -212,9 +244,9 @@ func TestComplexRule(t *testing.T) {
 		rIns = append(rIns, rl)
 	}
 
-	data := GenData(50)
+	dat := genData(50)
 
-	for _, item := range data {
+	for _, item := range dat {
 		for _, rl := range rIns {
 			flag, err := rl.Exec(item)
 			if err != nil {
@@ -243,9 +275,9 @@ func TestEmptyRule(t *testing.T) {
 		return
 	}
 
-	data := GenData(5)
+	dat := genData(5)
 
-	for _, item := range data {
+	for _, item := range dat {
 		flag, err := rl.Exec(item)
 		if err != nil {
 			t.Error(err)
@@ -259,7 +291,7 @@ func TestEmptyRule(t *testing.T) {
 }
 
 func TestSelfDataRule(t *testing.T) {
-	data := []struct {
+	dat := []struct {
 		ID     int
 		Msg    string
 		Tag    string
@@ -309,7 +341,7 @@ func TestSelfDataRule(t *testing.T) {
 		return
 	}
 
-	for _, item := range data {
+	for _, item := range dat {
 		flag, err := rl.Exec(item)
 		if err != nil {
 			t.Error(err)
