@@ -91,7 +91,7 @@ func TestSampleRule(t *testing.T) {
 		},
 	}
 
-	rl, err := GenFilter("test_rule", rule)
+	rl, err := NewFilter("test_rule", rule)
 	if err != nil {
 		t.Error(err)
 		return
@@ -130,7 +130,7 @@ func TestSampleRuleOfPtr(t *testing.T) {
 		},
 	}
 
-	rl, err := GenFilter("test_rule_ptr", rule)
+	rl, err := NewFilter("test_rule_ptr", rule)
 	if err != nil {
 		t.Error(err)
 		return
@@ -236,7 +236,7 @@ func TestComplexRule(t *testing.T) {
 	rls := []Rule{rule1, rule2, rule3}
 	rIns := make([]*Filter, 0)
 	for index, r := range rls {
-		rl, err := GenFilter(fmt.Sprintf("test_rule_%d", index), r)
+		rl, err := NewFilter(fmt.Sprintf("test_rule_%d", index), r)
 		if err != nil {
 			t.Error(err)
 			continue
@@ -269,7 +269,7 @@ func TestEmptyRule(t *testing.T) {
 		RRules: []RulePool{},
 	}
 
-	rl, err := GenFilter("test_rule_empty", ruleEmpty)
+	rl, err := NewFilter("test_rule_empty", ruleEmpty)
 	if err != nil {
 		t.Error(err)
 		return
@@ -335,7 +335,7 @@ func TestSelfDataRule(t *testing.T) {
 		},
 	}
 
-	rl, err := GenFilter("test_rule_self", ruleEmpty)
+	rl, err := NewFilter("test_rule_self", ruleEmpty)
 	if err != nil {
 		t.Error(err)
 		return

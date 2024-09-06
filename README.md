@@ -49,7 +49,7 @@ func TestSelfDataRule(t *testing.T) {
 		},
 	}
 
-	rl, err := GenRule("test_rule_self", ruleEmpty)
+	rl, err := NewFilter("test_rule_self", ruleEmpty)
 	if err != nil {
 		t.Error(err)
 		return

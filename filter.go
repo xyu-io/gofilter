@@ -37,7 +37,7 @@ type RulePool struct {
 
 type FilterFunc func(option any, data any) bool // 根据过滤
 
-func GenFilter(tag string, rule Rule) (*Filter, error) {
+func NewFilter(tag string, rule Rule) (*Filter, error) {
 	var r = &Filter{
 		rTag:    tag,
 		rFnMaps: make(map[string]RulePool),
