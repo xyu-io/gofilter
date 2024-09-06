@@ -12,7 +12,7 @@ const (
 	OR  = 1
 )
 
-type FilterRule struct {
+type Filter struct {
 	rTag    string              `json:"rtag,omitempty"`
 	rExpr   string              `json:"expression,omitempty"`
 	rFnMaps map[string]RulePool `json:"fnmaps,omitempty"`
@@ -35,10 +35,10 @@ type RulePool struct {
 	CSymbol int    // 逻辑运算符号（包含、大于、小于、不等于、等于等）
 }
 
-type Filter func(option any, data any) bool // 根据过滤
+type FilterFunc func(option any, data any) bool // 根据过滤
 
-func GenRule(tag string, rule Rule) (*FilterRule, error) {
-	var r = &FilterRule{
+func GenFilter(tag string, rule Rule) (*Filter, error) {
+	var r = &Filter{
 		rTag:    tag,
 		rFnMaps: make(map[string]RulePool),
 		rExpr:   "", // fn1 AND  (fn2.1 OR fn2.0) AND  (fn3 AND fn2)
@@ -63,11 +63,11 @@ func GenRule(tag string, rule Rule) (*FilterRule, error) {
 	return r, nil
 }
 
-func (f *FilterRule) expr() string {
+func (f *Filter) expr() string {
 	return f.rExpr
 }
 
-func (f *FilterRule) Exec(data any) (bool, error) {
+func (f *Filter) Exec(data any) (bool, error) {
 
 	flag, err := f.execIns.Exec(GetFnMaps(data, f.getFns()))
 	if err != nil {
@@ -76,15 +76,15 @@ func (f *FilterRule) Exec(data any) (bool, error) {
 	return flag, nil
 }
 
-func (f *FilterRule) Tag() string {
+func (f *Filter) Tag() string {
 	return f.rTag
 }
 
-func (f *FilterRule) getFns() map[string]RulePool {
+func (f *Filter) getFns() map[string]RulePool {
 	return f.rFnMaps
 }
 
-func (f *FilterRule) genExp(s *Stack, rs Rule) {
+func (f *Filter) genExp(s *Stack, rs Rule) {
 	// 入栈操作符，操作数
 	for _, r := range rs.RRules {
 		if _, ok := f.rFnMaps[r.CName]; !ok {
