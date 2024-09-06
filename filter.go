@@ -3,7 +3,6 @@ package gofilter
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 )
 
@@ -59,7 +58,7 @@ func NewFilter(tag string, rule Rule) (*Filter, error) {
 		return nil, errors.New(fmt.Sprintf("%s 【%s】: %s", r.rTag, r.rExpr, err.Error()))
 	}
 
-	log.Printf("init succeed. tag: %s, rule express: %s", r.rTag, r.rExpr)
+	//log.Printf("init succeed. tag: %s, rule express: %s", r.rTag, r.rExpr)
 	return r, nil
 }
 
