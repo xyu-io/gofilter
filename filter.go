@@ -84,7 +84,10 @@ func (f *Filter) ExecWithSlice(data any) (any, error) {
 		for i := 0; i < items.Len(); i++ {
 			item := items.Index(i)
 			flag, err := f.Exec(item.Interface())
-			if err != nil || !flag {
+			if err != nil {
+				return nil, err
+			}
+			if !flag {
 				continue
 			}
 			res = append(res, item.Interface())
