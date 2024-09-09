@@ -1,7 +1,9 @@
 package gofilter
 
 import (
+	"encoding/json"
 	"fmt"
+
 	"math/rand"
 	"testing"
 	"time"
@@ -110,6 +112,68 @@ func TestSampleRule(t *testing.T) {
 		}
 	}
 
+}
+
+func TestSliceRule(t *testing.T) {
+	rule := Rule{
+		RSign: AND,
+		RType: OR,
+		RRules: []RulePool{
+			{
+				CName:   "fn1_1",
+				CParams: []any{"important"},
+				CType:   "DType", //
+			},
+			{
+				CName:   "fn1_2",
+				CParams: []any{"danger"},
+				CType:   "DType", // 来自于数据字段
+			},
+		},
+		RChild: &Rule{
+			//RSign: AND,
+			RType: OR,
+			RRules: []RulePool{
+				{
+					CName:   "fn2_1",
+					CParams: []any{0},
+					CType:   "DLevel", //
+				},
+				{
+					CName:   "fn2_2",
+					CParams: []any{2},
+					CType:   "DLevel", // 来自于数据字段
+				},
+			},
+		},
+	}
+
+	rl, err := NewFilter("test_rule", rule)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	dat := genData(50)
+
+	res, err := rl.ExecWithSlice(dat)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	bytes, err := json.Marshal(res)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	var output []data
+	err = json.Unmarshal(bytes, &output)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Logf("output: %+v", output)
 }
 
 func TestSampleRuleOfPtr(t *testing.T) {

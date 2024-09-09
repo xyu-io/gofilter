@@ -3,6 +3,7 @@ package gofilter
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 )
 
@@ -73,6 +74,25 @@ func (f *Filter) Exec(data any) (bool, error) {
 		return false, err
 	}
 	return flag, nil
+}
+
+func (f *Filter) ExecWithSlice(data any) (any, error) {
+	t := reflect.TypeOf(data)
+	res := make([]any, 0)
+	if t.Kind() == reflect.Array || t.Kind() == reflect.Slice {
+		items := reflect.ValueOf(data)
+		for i := 0; i < items.Len(); i++ {
+			item := items.Index(i)
+			flag, err := f.Exec(item.Interface())
+			if err != nil || !flag {
+				continue
+			}
+			res = append(res, item.Interface())
+		}
+		return res, nil
+	} else {
+		return nil, errors.New("data must be a slice or array")
+	}
 }
 
 func (f *Filter) Tag() string {
