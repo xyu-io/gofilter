@@ -199,7 +199,7 @@ func logicSelection(rp RulePool, value any) bool {
 		if err != nil {
 			return true // 不兼容类型不做处理
 		}
-		flag = lt
+		flag = !lt
 	default:
 		// 不支持的类型
 		flag = false
